@@ -2,11 +2,11 @@
   <div class="sidebar-logo-container" :class="{'collapse':collapse}">
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
+        <img v-if="schoolLogo" :src="schoolLogo" class="sidebar-logo">
         <h1 v-else class="sidebar-title">{{ title }} </h1>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
+        <img v-if="schoolLogo" :src="schoolLogo" class="sidebar-logo">
         <h1 class="sidebar-title">{{ title }} </h1>
       </router-link>
     </transition>
@@ -14,6 +14,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+// import logo from '@/assets/logo.png'
 export default {
   name: 'SidebarLogo',
   props: {
@@ -24,9 +26,12 @@ export default {
   },
   data() {
     return {
-      title: 'Vue Admin Template',
-      logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
+      title: ''
+      // logo
     }
+  },
+  computed: {
+    ...mapGetters(['schoolLogo'])
   }
 }
 </script>
@@ -43,10 +48,10 @@ export default {
 
 .sidebar-logo-container {
   position: relative;
-  width: 100%;
+  width: 210px;
   height: 50px;
   line-height: 50px;
-  background: #2b2f3a;
+  // background: #2b2f3a;
   text-align: center;
   overflow: hidden;
 
@@ -55,8 +60,8 @@ export default {
     width: 100%;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      max-width: 100%;
+      max-height: 40px;
       vertical-align: middle;
       margin-right: 12px;
     }

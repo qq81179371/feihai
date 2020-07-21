@@ -1,69 +1,75 @@
 import axios from 'axios'
-import { MessageBox, Message } from 'element-ui'
-import store from '@/store'
-import { getToken } from '@/utils/auth'
+import {
+  Message
+} from 'element-ui'
+const os = require('os')
+import store from '@/store/index.js'
+import jsCookie from '@/utils/auth'
 
-// create an axios instance
+const source = 4 // 云端
+// const source = 3 // 本地
+function getNetworkIp() {
+  let needHost = '' // 打开的host
+  try {
+    // 获得网络接口列表
+    const network = os.networkInterfaces()
+    for (const dev in network) {
+      const iface = network[dev]
+      for (let i = 0; i < iface.length; i++) {
+        const alias = iface[i]
+        if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+          needHost = alias.address
+        }
+      }
+    }
+  } catch (e) {
+    needHost = 'localhost'
+  }
+  return needHost
+}
+
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-  // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000 // request timeout
+  // baseURL: process.env.VUE_APP_BASE_API,
+  baseURL: source === 3 ? getNetworkIp() : process.env.VUE_APP_BASE_API,
+  timeout: 10000
 })
 
-// request interceptor
 service.interceptors.request.use(
   config => {
-    // do something before request is sent
-
-    if (store.getters.token) {
-      // let each request carry token
-      // ['X-Token'] is a custom headers key
-      // please modify it according to the actual situation
-      config.headers['X-Token'] = getToken()
+    if (store.getters.uu || store.getters.ui) {
+      let api_url = 'app'
+      if (config.type === 2) api_url = 'upload'
+      config.url = `/${api_url}${config.url}?source=${source}&cmd=${config.cmd}&uu=${jsCookie.getUuKey()}&ui=${jsCookie.getUiKey()}`
+    } else {
+      config.url = `/app${config.url}?source=${source}&cmd=${config.cmd}`
     }
     return config
   },
   error => {
-    // do something with request error
-    console.log(error) // for debug
     return Promise.reject(error)
   }
 )
 
-// response interceptor
 service.interceptors.response.use(
-  /**
-   * If you want to get http information such as headers or status
-   * Please return  response => response
-  */
-
-  /**
-   * Determine the request status by custom code
-   * Here is just an example
-   * You can also judge the status by HTTP Status Code
-   */
   response => {
     const res = response.data
-
-    // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
-      Message({
-        message: res.message || 'Error',
-        type: 'error',
-        duration: 5 * 1000
-      })
-
-      // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
-      if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
-        // to re-login
-        MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
-          confirmButtonText: 'Re-Login',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }).then(() => {
-          store.dispatch('user/resetToken').then(() => {
-            location.reload()
-          })
+    if (res.result.code !== 0) {
+      if (res.result.code === 1) {
+        Message({
+          message: res.result.text || 'warning',
+          type: 'warning',
+          duration: 5 * 1000
+        })
+      } else {
+        Message({
+          message: res.result.text || 'Error',
+          type: 'error',
+          duration: 5 * 1000
+        })
+      }
+      if (res.result.code === 1102) {
+        store.dispatch('user/resetToken').then(() => {
+          location.reload()
         })
       }
       return Promise.reject(new Error(res.message || 'Error'))
@@ -72,14 +78,12 @@ service.interceptors.response.use(
     }
   },
   error => {
-    console.log('err' + error) // for debug
     Message({
-      message: error.message,
+      message: '连接超时,请刷新页面',
       type: 'error',
       duration: 5 * 1000
     })
     return Promise.reject(error)
   }
 )
-
 export default service

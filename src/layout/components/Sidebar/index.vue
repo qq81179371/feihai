@@ -8,6 +8,7 @@
         :background-color="variables.menuBg"
         :text-color="variables.menuText"
         :unique-opened="false"
+        :menu-trigger="`click`"
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
         mode="vertical"

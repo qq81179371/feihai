@@ -1,0 +1,45 @@
+
+.el-dialog-box {
+  >>> .el-dialog {
+    width: 50%;
+    max-width: 750px;
+    min-width: 450px;
+  }
+}
+/deep/ .el-dialog__body {
+  height: auto;
+  max-height: 500px;
+  overflow-x: hidden;
+  &::-webkit-scrollbar-track-piece {
+    background: #d3dce6;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #99a9bf;
+  }
+}
+/deep/ .el-select {
+  display: block;
+}
+/deep/ .el-form-item__content {
+  max-width: 300px;
+}
+/deep/ .el-dialog__header {
+  padding: 10px;
+  margin: 10px;
+  position: relative;
+  z-index: 2;
+  background: #efefef;
+  transform: translateY(20px);
+  .el-dialog__headerbtn {
+    top: 15px;
+  }
+}
+/deep/ .el-dialog__footer {
+  border-top: 1px solid #d5d5d5;
+  padding: 15px 30px;
+}
